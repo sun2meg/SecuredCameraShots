@@ -1,0 +1,32 @@
+
+i
+java:S1192±"MDefine a constant instead of duplicating this literal "GoogleSignIn" 3 times.(â½°Šúÿÿÿÿ
+V	java:S125."<This block of commented-out lines of code should be removed.(ÑÄ’šùÿÿÿÿ
+o
+java:S1450T"ZRemove the "driveClient" field and declare it as a local variable in the relevant methods.(áÄï/
+K
+java:S1172Ã"/Remove this unused method parameter "videoUri".(æ›ì¤üÿÿÿÿ
+C
+java:S1602à",Remove useless curly braces around statement(óÈÂË
+H
+java:S1602ä",Remove useless curly braces around statement(ŽÕÊ¾øÿÿÿÿ
+H
+java:S1602ó",Remove useless curly braces around statement(ËÖ®øÿÿÿÿ
+3
+java:S11281"Remove this duplicated import.(³ð‹G
+9
+java:S11282"Remove this duplicated import.(€®¥õÿÿÿÿÿ
+9
+java:S11283"Remove this duplicated import.(òêû‘ýÿÿÿÿ
+9
+java:S11284"Remove this duplicated import.(°þÊóøÿÿÿÿ
+4
+java:S11285"Remove this duplicated import.(ãçšþ
+9
+java:S11286"Remove this duplicated import.(Ô¦Ø²øÿÿÿÿ
+9
+java:S1128I"Remove this duplicated import.(ªº»Úýÿÿÿÿ
+9
+java:S1128J"Remove this duplicated import.(Ó ³ÿÿÿÿÿ
+D
+java:S1068T"/Remove this unused "driveClient" private field.(áÄï/

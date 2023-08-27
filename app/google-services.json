@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "1012390579599",
+    "project_id": "securedshots",
+    "storage_bucket": "securedshots.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1012390579599:android:6f2d251651c43d0281cffa",
+        "android_client_info": {
+          "package_name": "com.android.sun2meg.securedcamerashots"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1012390579599-itfrpmubki2srjmrovmr947031gd5b7j.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBplnrhJ5galephYqxE5AfpfxQE4Nvfn8E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1012390579599-itfrpmubki2srjmrovmr947031gd5b7j.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
