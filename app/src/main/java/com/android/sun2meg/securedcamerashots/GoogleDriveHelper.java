@@ -1,10 +1,12 @@
 package com.android.sun2meg.securedcamerashots;
 
+//import static com.android.sun2meg.securedcamerashots.MainActivity.folderId;
 
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
+import android.os.Handler;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -16,7 +18,9 @@ import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.drive.Drive;
 
-import java.io.File;
+import com.google.api.services.drive.model.File;
+import com.google.api.services.drive.model.FileList;
+
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -53,7 +57,7 @@ import com.google.api.client.http.HttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
-import com.google.android.gms.drive.Drive;
+
 
 import com.google.android.gms.drive.DriveApi;
 import com.google.android.gms.drive.DriveClient;
@@ -64,10 +68,14 @@ import com.google.android.gms.drive.MetadataChangeSet;
 import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
+import com.google.api.services.drive.DriveScopes;
+import com.google.api.services.drive.model.FileList;
 
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 public class GoogleDriveHelper {
 
@@ -75,16 +83,25 @@ public class GoogleDriveHelper {
  public static final int REQUEST_CODE_SIGN_IN = 1;
 
  private Context context;
+    private Drive mDriveService;
  private Drive driveService;
  private GoogleSignInClient googleSignInClient;
     DriveResourceClient driveResourceClient;
-public GoogleDriveHelper(Context context) {
-    this.context = context;
-initDriveService();
-      }
+    Handler mainHandler;
+    private final Executor mExecutor = Executors.newSingleThreadExecutor();
+    public GoogleDriveHelper(Context context, Handler mainHandler) {
+        this.context = context;
+        this.mainHandler = mainHandler;
+//        initDriveService();
+    }
 
     private void initDriveService() {
-        GoogleSignInAccount signInAccount = GoogleSignIn.getLastSignedInAccount(context);
+        GoogleSignInOptions signInOptions = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestScopes(new Scope(DriveScopes.DRIVE_FILE))
+                .build();
+
+        GoogleSignInClient googleSignInClient = GoogleSignIn.getClient(context, signInOptions);
+        GoogleSignInAccount signInAccount = googleSignInClient.silentSignIn().getResult();
 
         if (signInAccount != null) {
             driveResourceClient = Drive.getDriveResourceClient(context, signInAccount);
@@ -101,27 +118,12 @@ initDriveService();
 //        GoogleSignInAccount signInAccount = GoogleSignIn.getLastSignedInAccount(context);
 //
 //        if (signInAccount != null) {
-//            DriveResourceClient driveResourceClient = Drive.getDriveResourceClient(context, signInAccount);
+//         driveResourceClient = Drive.getDriveResourceClient(context, signInAccount);
 //            // Use the driveResourceClient to interact with Google Drive services
 //        }
 //    }
 
-//    private void initDriveService() {
-//     HttpTransport transport = AndroidHttp.newCompatibleTransport();
-//     JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
-//
-//         GoogleCredential credential = GoogleCredential.fromStream(context.getResources().openRawResource(R.raw.credentials))
-//                 .createScoped(Collections.singleton("https://www.googleapis.com/auth/drive.file"));
-//
-//
-////         GoogleCredential credential = GoogleCredential.fromStream(context.getResources().openRawResource(R.raw.credentials))
-////     .createScoped(Collections.singleton(DriveScopes.DRIVE_FILE));
-//
-// driveService = new Drive.Builder(transport, jsonFactory, credential)
-//.setApplicationName("Your Application Name")
-//.setGoogleClientRequestInitializer(new CommonGoogleClientRequestInitializer("YOUR_API_KEY"))
-//.build();
-//}
+
 
     public GoogleSignInAccount getSignInAccount() {
         return GoogleSignIn.getLastSignedInAccount(context);
@@ -129,16 +131,27 @@ initDriveService();
 
 public void signIn() {
 
-    GoogleSignInOptions signInOptions = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestScopes(new Scope("https://www.googleapis.com/auth/drive.file"))
-            .build();
+
+
+    GoogleSignInOptions signInOptions =
+            new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                    .requestScopes(new Scope(DriveScopes.DRIVE_FILE))
+                    .requestEmail()
+                    .build();
+    googleSignInClient = GoogleSignIn.getClient(context, signInOptions);
+
+    // The result of the sign-in Intent is handled in onActivityResult.
+    ((Activity) context).startActivityForResult(googleSignInClient.getSignInIntent(), REQUEST_CODE_SIGN_IN);
 
 
 
-     googleSignInClient = GoogleSignIn.getClient(context, signInOptions);
-
-    Intent signInIntent = googleSignInClient.getSignInIntent();
-   ((Activity) context).startActivityForResult(signInIntent, REQUEST_CODE_SIGN_IN);
+//    GoogleSignInOptions signInOptions = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+//            .requestScopes(new Scope("https://www.googleapis.com/auth/drive.file"))
+//            .build();
+//     googleSignInClient = GoogleSignIn.getClient(context, signInOptions);
+//
+//    Intent signInIntent = googleSignInClient.getSignInIntent();
+//   ((Activity) context).startActivityForResult(signInIntent, REQUEST_CODE_SIGN_IN);
     }
 
    public void handleSignInResult(Intent resultIntent) {
@@ -147,22 +160,27 @@ public void signIn() {
            if (account != null) {
       initDriveService();
       Toast.makeText(context, "Signed in successfully", Toast.LENGTH_SHORT).show();
-      }
+      }  else
+           showToast("Signed in Not successfully");
     } catch (ApiException e) {
      Log.e(TAG, "Sign-in failed", e);
      Toast.makeText(context, "Sign-in failed", Toast.LENGTH_SHORT).show();
       }
        }
 
-    public void uploadVideo(String videoFilePath, GoogleApiClient googleApiClient) {
-//    public void uploadVideo(String videoFilePath, DriveResourceClient driveResourceClient, GoogleApiClient googleApiClient) {
+//    public void uploadVideo(String videoFilePath, GoogleApiClient googleApiClient) {
+    public void uploadVideo(String videoFilePath, DriveResourceClient driveResourceClient, GoogleApiClient googleApiClient) {
         java.io.File videoFile = new java.io.File(videoFilePath);
-
+showToast("upload stage");
+if (driveResourceClient==null){
+    showToast("drive is null");
+}
         // Create metadata for the file
         MetadataChangeSet metadataChangeSet = new MetadataChangeSet.Builder()
                 .setTitle("My Video")
                 .setMimeType("video/mp4")
                 .build();
+
 
         // Create a new empty DriveContents resource
         driveResourceClient.createContents()
@@ -183,14 +201,21 @@ public void signIn() {
                         driveContents.commit(googleApiClient, metadataChangeSet)
                                 .setResultCallback(status -> {
                                     if (status.isSuccess()) {
-                                        showToast("Uploaded successfully");
+
+                                        mainHandler.post(() -> {
+                                            showToast("Uploaded successfully");
+                                        });
+
                                          // File created and content uploaded successfully
 //                                        DriveFile driveFile = Drive.DriveApi.getFile(googleApiClient, status.getDriveFile().getDriveId());
 //                                        String fileId = driveFile.getDriveId().encodeToString();
 //                                        // Handle fileId as needed
                                     } else {
                                         // Handle failure
-                                        showToast("Uploading error: " + status.getStatusMessage());
+
+                                        mainHandler.post(() -> {
+                                            showToast("Uploaded successfully");
+                                        });
 
                                         Log.e(TAG, "Error committing DriveContents: " + status.getStatusMessage());
                                     }
@@ -198,13 +223,18 @@ public void signIn() {
 
                     } catch (IOException e) {
                         // Handle IO exception
-                        showToast("Error reading file");
 
+                        mainHandler.post(() -> {
+                            showToast("Error reading file");
+                        });
                     }
                 })
                 .addOnFailureListener(e -> {
                     // Handle failure
-                    Log.e(TAG, "Error creating DriveContents", e);
+                    mainHandler.post(() -> {
+                        showToast("Error creating DriveContents");
+                    });
+
                 });
     }
     private void showToast(String message) {
@@ -215,14 +245,54 @@ public void signIn() {
 //         new UploadVideoTask().execute(videoFilePath);
 //         }
 
-//         private class UploadVideoTask extends AsyncTask<String, Void, String> {
+//    public Task<String> isFolderPresent() {
+//        return Tasks.call(mExecutor, () -> {
+//            FileList result = mDriveService.files().list().setQ("mimeType='application/vnd.google-apps.folder' and trashed=false").execute();
+//            for (com.google.api.services.drive.model.File file : result.getFiles()) {
+//                if (file.getName().equals(FOLDER_NAME))
+//                    return file.getId();
+//            }
+//            return "";
+//        });
+//    }
+//
+//    public Task<Boolean> uploadFileToGoogleDrive(String path) {
+//
+//        if (folderId.isEmpty()){
+//            Log.e(TAG, "uploadFileToGoogleDrive: folder id not present" );
+//            isFolderPresent().addOnSuccessListener(id -> folderId=id)
+//                    .addOnFailureListener(exception -> Log.e(TAG, "Couldn't create file.", exception));
+//        }
+//
+//        return Tasks.call(mExecutor, () -> {
+//
+//            Log.e(TAG, "uploadFileToGoogleDrive: path: "+path );
+//            java.io.File filePath = new java.io.File(path);
+//
+//            com.google.api.services.drive.model.File fileMetadata = new com.google.api.services.drive.model.File();
+//            fileMetadata.setName(filePath.getName());
+//            fileMetadata.setParents(Collections.singletonList(folderId));
+//            fileMetadata.setMimeType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+//
+//            FileContent mediaContent = new FileContent("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", filePath);
+//            com.google.api.services.drive.model.File file = mDriveService.files().create(fileMetadata, mediaContent)
+//                    .setFields("id")
+//                    .execute();
+//            System.out.println("File ID: " + file.getId());
+//
+//            return false;
+//        });
+//    }
+
+//
+//    private class UploadVideoTask extends AsyncTask<String, Void, String> {
 //
 //@Override
 // protected String doInBackground(String... params) {
 //String videoFilePath = params[0];
 //
 // try {
-// File fileMetadata = new File(videoFilePath);
+// File fileMetadata = new File();
 // fileMetadata.setName("My Video");
 //fileMetadata.setMimeType("video/mp4");
 //

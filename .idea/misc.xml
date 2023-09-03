@@ -4,9 +4,11 @@
     <option name="filePathToZoomLevelMap">
       <map>
         <entry key="..\:/Users/Mega/AndroidStudioProjects/SecuredCameraShots/app/src/main/res/layout/activity_google_drive.xml" value="0.1933876811594203" />
-        <entry key="..\:/Users/Mega/AndroidStudioProjects/SecuredCameraShots/app/src/main/res/layout/activity_main.xml" value="0.1" />
+        <entry key="..\:/Users/Mega/AndroidStudioProjects/SecuredCameraShots/app/src/main/res/layout/activity_list.xml" value="0.20416666666666666" />
+        <entry key="..\:/Users/Mega/AndroidStudioProjects/SecuredCameraShots/app/src/main/res/layout/activity_main.xml" value="0.25" />
         <entry key="..\:/Users/Mega/AndroidStudioProjects/SecuredCameraShots/app/src/main/res/layout/activity_upload.xml" value="0.14719202898550723" />
         <entry key="..\:/Users/Mega/AndroidStudioProjects/SecuredCameraShots/app/src/main/res/layout/activity_upload_to_drive.xml" value="0.25" />
+        <entry key="..\:/Users/Mega/AndroidStudioProjects/SecuredCameraShots/app/src/main/res/layout/file_list_layout.xml" value="0.20416666666666666" />
       </map>
     </option>
   </component>

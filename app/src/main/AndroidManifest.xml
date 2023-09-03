@@ -34,13 +34,13 @@
             android:name=".UploadToDriveActivity"
             android:exported="true" />
         <activity
-            android:name=".MainActivity"
+            android:name=".GoogleDriveActivity"
             android:exported="true" />
         <activity
             android:name=".UploadActivity"
             android:exported="true" />
         <activity
-            android:name=".GoogleDriveActivity"
+            android:name=".MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
