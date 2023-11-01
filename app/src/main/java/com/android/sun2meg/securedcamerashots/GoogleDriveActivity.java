@@ -285,38 +285,38 @@ public class GoogleDriveActivity extends AppCompatActivity
             // Get the path
             String selectedFilePath = FileUtils.getPath(this, selectedFileUri);
             Log.e(TAG,"Selected File Path:" + selectedFilePath);
-            if(selectedFilePath != null && !selectedFilePath.equals("")){
-                if (mDriveServiceHelper != null) {
-                    mDriveServiceHelper.uploadFileToGoogleDrive(selectedFilePath)
-                            .addOnSuccessListener(new OnSuccessListener<Boolean>() {
-                                @Override
-                                public void onSuccess(Boolean result) {
-                                    loadToast.success();
-                                    showMessage("File uploaded ...!!");
-                                }
-                            })
-                            .addOnFailureListener(new OnFailureListener() {
-                                @Override
-                                public void onFailure(Exception e) {
-                                    loadToast.error();
-                                    showMessage("Couldn't able to upload file, error: "+e);
-                                }
-                            });
-                }
-            }else{
-                Toast.makeText(this,"Cannot upload file to server",Toast.LENGTH_SHORT).show();
-            }
-
-//            if (  googleDriveHelper.driveResourceClient != null && googleApiClient != null) {
-//                // Retrieve the captured video's Uri from the Intent
-//                Uri capturedVideoUri = data.getData();
-//                // Convert the Uri to a file path using a helper method
-//                capturedVideoFilePath = getRealPathFromURI(capturedVideoUri);
-//                // Call the uploadVideo() method from GoogleDriveHelper
-//                googleDriveHelper.uploadVideo(capturedVideoFilePath, googleDriveHelper.driveResourceClient, googleApiClient);
-//            } else {
-//                Toast.makeText(this, "Drive resource client or Google API client is null", Toast.LENGTH_SHORT).show();
+//            if(selectedFilePath != null && !selectedFilePath.equals("")){
+//                if (mDriveServiceHelper != null) {
+//                    mDriveServiceHelper.uploadFileToGoogleDrive(selectedFilePath)
+//                            .addOnSuccessListener(new OnSuccessListener<Boolean>() {
+//                                @Override
+//                                public void onSuccess(Boolean result) {
+//                                    loadToast.success();
+//                                    showMessage("File uploaded ...!!");
+//                                }
+//                            })
+//                            .addOnFailureListener(new OnFailureListener() {
+//                                @Override
+//                                public void onFailure(Exception e) {
+//                                    loadToast.error();
+//                                    showMessage("Couldn't able to upload file, error: "+e);
+//                                }
+//                            });
+//                }
+//            }else{
+//                Toast.makeText(this,"Cannot upload file to server",Toast.LENGTH_SHORT).show();
 //            }
+
+            if (  googleDriveHelper.driveResourceClient != null && googleApiClient != null) {
+                // Retrieve the captured video's Uri from the Intent
+                Uri capturedVideoUri = data.getData();
+                // Convert the Uri to a file path using a helper method
+                capturedVideoFilePath = getRealPathFromURI(capturedVideoUri);
+                // Call the uploadVideo() method from GoogleDriveHelper
+                googleDriveHelper.uploadVideo(capturedVideoFilePath, googleDriveHelper.driveResourceClient, googleApiClient);
+            } else {
+                Toast.makeText(this, "Drive resource client or Google API client is null", Toast.LENGTH_SHORT).show();
+            }
 
 //            googleDriveHelper.uploadVideo(capturedVideoFilePath, driveResourceClient, googleApiClient);
         }

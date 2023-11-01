@@ -3,8 +3,13 @@ package com.android.sun2meg.securedcamerashots;
 //import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
+
 import android.Manifest;
+import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
+import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -39,6 +44,9 @@ import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 import net.steamcrafted.loadtoast.LoadToast;
 import java.util.ArrayList;
@@ -70,30 +78,298 @@ public class MainActivity extends AppCompatActivity {
     private Button signInButton;
     private Button createFolderButton;
     private Button folderFilesButton;
-    private Button uploadFileButton;
+
     private Button signOutButton;
     GoogleSignInClient googleSignInClient;
     LoadToast loadToast;
+    private ProgressBar progressBar;
+    private TextView progressText;
+    private Uri capturedImageUri;
+    private Uri capturedVideoUri;
+    private boolean captureInProgress = false;
+    private static final int REQUEST_ACCOUNT_HINT = 100;
+    private static final int REQUEST_IMAGE_CAPTURE = 1002;
+    private static final int REQUEST_VIDEO_CAPTURE = 1003;
+    private static final int REQUEST_IMAGE_GALLERY = 1004;
+    private static final int REQUEST_VIDEO_GALLERY = 1005;
+    private static final int REQUEST_PERMISSIONS = 1006;
+    private ImageView btnResendImg;
+    private ImageView btnResendVid;
+    private ImageView btnSelectImage;
+    private ImageView btnSelectVideo;
+    private ImageView btnCaptureVideo;
+    private ImageView btnCaptureImage;
+    private String selectedFilePath;
+    private String selectedFilePath2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        requestForStoragePermission();
+if (!hasRequiredPermissions()) {
+    requestForStoragePermission();
+}
         signInButton = findViewById(R.id.id_sign_in);
         createFolderButton = findViewById(R.id.id_create_folder);
         folderFilesButton = findViewById(R.id.id_folder_files);
-        uploadFileButton = findViewById(R.id.id_upload_file);
         signOutButton = findViewById(R.id.id_sign_out);
 
+        btnCaptureImage = findViewById(R.id.btn_capture_image);
+        btnCaptureVideo = findViewById(R.id.btn_capture_video);
+        btnResendImg = findViewById(R.id.btnResendImg);
+        btnResendVid = findViewById(R.id.btnResendVid);
+        btnSelectImage = findViewById(R.id.btnSelectImage);
+        btnSelectVideo = findViewById(R.id.btnSelectVideo);
+
         loadToast = new LoadToast(this);
+        progressBar = findViewById(R.id.progressBar);
+        progressText = findViewById(R.id.progressText);
+        progressBar.setMax(100);
+
+//        if (mDriveServiceHelper != null) {
+//            createFolder();
+//        } else {
+//            Toast.makeText(getApplicationContext(), "Not Signed successfully", Toast.LENGTH_SHORT).show();
+//
+//        }
+
+        btnCaptureImage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                        captureImage();
+
+            }
+        });
+
+        btnCaptureVideo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+//                    if (!captureInProgress) {
+//                        captureInProgress = true;
+                        captureVideo();
+//                    } else {
+//                        Toast.makeText(MainActivity.this, "Capture already in progress", Toast.LENGTH_SHORT).show();
+//                    }
+//                    captureVideo();
+
+
+            }
+        });
+
+
+
+        btnResendImg.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (capturedImageUri != null) {
+                    resendImg(capturedImageUri);
+                } else {
+                    Toast.makeText(MainActivity.this, "No media captured", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+        btnResendVid.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (capturedVideoUri != null) {
+                    resendVid(capturedVideoUri);
+                } else {
+                    Toast.makeText(MainActivity.this, "No media captured", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+        btnSelectImage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                selectImageFromGallery();
+            }
+        });
+
+        btnSelectVideo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                selectVideoFromGallery();
+            }
+        });
     }
+//    private boolean checkStoragePermission() {
+//        return ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
+//    }
+    private boolean hasRequiredPermissions() {
+        return ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED &&
+                ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
+    }
+
+    private void captureImage() {
+//        signIn();
+        if (mDriveServiceHelper != null) {
+
+//            createFolder();
+            Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            // Set video quality (0 for low quality, 1 for high quality)
+
+            if (intent.resolveActivity(getPackageManager()) != null) {
+                startActivityForResult(intent, REQUEST_IMAGE_CAPTURE);
+            }
+            // Continue with the rest of your code that uses driveResourceClient
+        } else {
+            Toast.makeText(getApplicationContext(), "Not Signed successfully", Toast.LENGTH_SHORT).show();
+
+        }
+
+    }
+
+
+    public void captureVideo() {
+//        signIn();
+        if (mDriveServiceHelper != null) {
+
+//            createFolder();
+            Intent intent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
+            // Set video quality (0 for low quality, 1 for high quality)
+            intent.putExtra(MediaStore.EXTRA_VIDEO_QUALITY, 0);
+            if (intent.resolveActivity(getPackageManager()) != null) {
+                startActivityForResult(intent, REQUEST_CODE_CAPTURE_VIDEO);
+            }
+            // Continue with the rest of your code that uses driveResourceClient
+        } else {
+            Toast.makeText(getApplicationContext(), "Not Signed successfully", Toast.LENGTH_SHORT).show();
+
+        }
+
+    }
+
+    private void resendImg(Uri uri) {
+
+        if(selectedFilePath2 != null && !selectedFilePath2.equals("")){
+            if (mDriveServiceHelper != null) {
+                loadToast.setText("Uploading file...");
+                loadToast.show();
+                mDriveServiceHelper.uploadFileToGoogleDriveImg(selectedFilePath2,progressBar,progressText)
+                        .addOnSuccessListener(new OnSuccessListener<Boolean>() {
+                            @Override
+                            public void onSuccess(Boolean result) {
+                                loadToast.success();
+                                showMessage("File uploaded ...!!");
+                            }
+                        })
+                        .addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(Exception e) {
+                                loadToast.error();
+                                showMessage("Couldn't able to upload file, error: "+e);
+                            }
+                        });
+            }
+        }else{
+            Toast.makeText(this,"Cannot upload file to server",Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void resendVid(Uri uri) {
+
+        if(selectedFilePath != null && !selectedFilePath.equals("")){
+            if (mDriveServiceHelper != null) {
+                loadToast.setText("Uploading file...");
+                loadToast.show();
+                mDriveServiceHelper.uploadFileToGoogleDrive(selectedFilePath,progressBar,progressText)
+                        .addOnSuccessListener(new OnSuccessListener<Boolean>() {
+                            @Override
+                            public void onSuccess(Boolean result) {
+                                loadToast.success();
+                                showMessage("File uploaded ...!!");
+                            }
+                        })
+                        .addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(Exception e) {
+                                loadToast.error();
+                                showMessage("Couldn't able to upload file, error: "+e);
+                            }
+                        });
+            }
+        }else{
+            Toast.makeText(this,"Cannot upload file to server",Toast.LENGTH_SHORT).show();
+        }
+    }
+
+
+    public void sendVid(Uri uri) {
+
+
+        String path = FileUtils.getPath(this, uri);
+        Log.e(TAG, "Selected File Path:" + selectedFilePath2);
+
+
+        if (path != null && !path.equals("")) {
+            if (mDriveServiceHelper != null) {
+                      mDriveServiceHelper.uploadFileToGoogleDrive(path, progressBar,progressText)
+                        .addOnSuccessListener(new OnSuccessListener<Boolean>() {
+                            @Override
+                            public void onSuccess(Boolean result) {
+                                loadToast.success();
+                                showMessage("File uploaded ...!!");
+                            }
+                        })
+                        .addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(Exception e) {
+                                loadToast.error();
+                                showMessage("Couldn't able to upload file, error: " + e);
+                            }
+                        });
+            }
+        } else {
+            Toast.makeText(this, "Cannot upload file to server", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    public void sendImg(Uri uri){
+
+        String path = FileUtils.getPath(this, uri);
+        Log.e(TAG,"Selected File Path:" + selectedFilePath2);
+
+
+        if(path != null && !path.equals("")){
+            if (mDriveServiceHelper != null) {
+
+                mDriveServiceHelper.uploadFileToGoogleDriveImg(path,progressBar,progressText)
+                        .addOnSuccessListener(new OnSuccessListener<Boolean>() {
+                            @Override
+                            public void onSuccess(Boolean result) {
+                                loadToast.success();
+                                showMessage("File uploaded ...!!");
+                            }
+                        })
+                        .addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(Exception e) {
+                                loadToast.error();
+                                showMessage("Couldn't able to upload file, error: "+e);
+                            }
+                        });
+            }
+        }else{
+            Toast.makeText(this,"Cannot upload file to server",Toast.LENGTH_SHORT).show();
+        }
+
+    }
+
+
 
     // Read/Write permission
     private void requestForStoragePermission() {
         Dexter.withContext(this)
                 .withPermissions(
+                        Manifest.permission.GET_ACCOUNTS,
+                        Manifest.permission.INTERNET,
+                        Manifest.permission.READ_CONTACTS,
+                        Manifest.permission.CAMERA,
+                        Manifest.permission.RECORD_AUDIO,
                         Manifest.permission.READ_EXTERNAL_STORAGE,
                         Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 .withListener(new MultiplePermissionsListener() {
@@ -200,16 +476,16 @@ public class MainActivity extends AppCompatActivity {
                 loadToast.show();
 
                 // Get the Uri of the selected file
-                Uri selectedFileUri = resultData.getData();
-                Log.e(TAG, "selected File Uri: "+selectedFileUri );
+                capturedVideoUri = resultData.getData();
+                Log.e(TAG, "selected File Uri: "+capturedVideoUri );
                 // Get the path
-                String selectedFilePath = FileUtils.getPath(this, selectedFileUri);
+                 selectedFilePath = FileUtils.getPath(this, capturedVideoUri);
                 Log.e(TAG,"Selected File Path:" + selectedFilePath);
 
 
                 if(selectedFilePath != null && !selectedFilePath.equals("")){
                     if (mDriveServiceHelper != null) {
-                        mDriveServiceHelper.uploadFileToGoogleDrive(selectedFilePath)
+                        mDriveServiceHelper.uploadFileToGoogleDrive(selectedFilePath,progressBar,progressText)
                                 .addOnSuccessListener(new OnSuccessListener<Boolean>() {
                                     @Override
                                     public void onSuccess(Boolean result) {
@@ -229,19 +505,95 @@ public class MainActivity extends AppCompatActivity {
                     Toast.makeText(this,"Cannot upload file to server",Toast.LENGTH_SHORT).show();
                 }
                 break;
+            case REQUEST_IMAGE_CAPTURE:
+
+                loadToast.setText("Uploading file...");
+                loadToast.show();
+
+                // Get the Uri of the selected file
+                Bitmap imageBitmap = (Bitmap) resultData.getExtras().get("data");
+                if (imageBitmap != null) {
+                    capturedImageUri = saveImageToExternalStorage(imageBitmap);
+
+                } else {
+                    Toast.makeText(MainActivity.this, "Null Bitmap", Toast.LENGTH_SHORT).show();
+                }
+
+
+                Log.e(TAG, "selected File Uri: "+capturedImageUri );
+                // Get the path
+                selectedFilePath2 = FileUtils.getPath(this, capturedImageUri);
+                Log.e(TAG,"Selected File Path:" + selectedFilePath2);
+
+
+                if(selectedFilePath2 != null && !selectedFilePath2.equals("")){
+                    if (mDriveServiceHelper != null) {
+                        mDriveServiceHelper.uploadFileToGoogleDriveImg(selectedFilePath2,progressBar,progressText)
+                                .addOnSuccessListener(new OnSuccessListener<Boolean>() {
+                                    @Override
+                                    public void onSuccess(Boolean result) {
+                                        loadToast.success();
+                                        showMessage("File uploaded ...!!");
+                                    }
+                                })
+                                .addOnFailureListener(new OnFailureListener() {
+                                    @Override
+                                    public void onFailure(Exception e) {
+                                        loadToast.error();
+                                        showMessage("Couldn't able to upload file, error: "+e);
+                                    }
+                                });
+                    }
+                }else{
+                    Toast.makeText(this,"Cannot upload file to server",Toast.LENGTH_SHORT).show();
+                }
+                break;
+            case REQUEST_IMAGE_GALLERY:
+                if(resultData == null){
+                    //no data present
+                    return;
+                }
+                loadToast.setText("Uploading file...");
+                loadToast.show();
+                capturedImageUri = resultData.getData();
+
+                Toast.makeText(MainActivity.this, "Image selected", Toast.LENGTH_SHORT).show();
+                sendImg(capturedImageUri);
+                break;
+            case REQUEST_VIDEO_GALLERY:
+                if(resultData == null){
+                    //no data present
+                    return;
+                }
+                loadToast.setText("Uploading file...");
+                loadToast.show();
+                capturedVideoUri = resultData.getData();
+                Toast.makeText(MainActivity.this, "Video selected", Toast.LENGTH_SHORT).show();
+                sendVid(capturedVideoUri);
+                break;
+
         }
 
         super.onActivityResult(requestCode, resultCode, resultData);
     }
 
+    private Uri saveImageToExternalStorage(Bitmap imageBitmap) {
+        String savedImageURL = MediaStore.Images.Media.insertImage(
+                getContentResolver(),
+                imageBitmap,
+                "image_" + System.currentTimeMillis(),
+                "Image captured from Camera");
+
+        return Uri.parse(savedImageURL);
+    }
     public void captureVideo(View view) {
 //        signIn();
         if (mDriveServiceHelper != null) {
-//        signInAccount = googleDriveHelper.getSignInAccount();
-//        if (signInAccount != null) {
-            createFolder();
-//            googleDriveHelper.driveResourceClient = Drive.getDriveResourceClient(this, signInAccount);
+
+//            createFolder();
             Intent intent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
+            // Set video quality (0 for low quality, 1 for high quality)
+            intent.putExtra(MediaStore.EXTRA_VIDEO_QUALITY, 0);
             if (intent.resolveActivity(getPackageManager()) != null) {
                 startActivityForResult(intent, REQUEST_CODE_CAPTURE_VIDEO);
             }
@@ -249,12 +601,6 @@ public class MainActivity extends AppCompatActivity {
         } else {
             Toast.makeText(getApplicationContext(), "Not Signed successfully", Toast.LENGTH_SHORT).show();
 
-//            googleDriveHelper.signIn();
-//            signInAccount = googleDriveHelper.getSignInAccount();
-
-
-            // Handle the case where the user is not signed in
-            // For example, you can prompt the user to sign in or handle it based on your app's logic
         }
 
     }
@@ -294,9 +640,9 @@ public class MainActivity extends AppCompatActivity {
                     signInButton.setEnabled(false);
                     createFolderButton.setEnabled(true);
                     folderFilesButton.setEnabled(true);
-                    uploadFileButton.setEnabled(true);
-                    signOutButton.setEnabled(true);
 
+                    signOutButton.setEnabled(true);
+                    createFolder();
                     showMessage("Sign-In done...!!");
                 })
                 .addOnFailureListener(new OnFailureListener() {
@@ -320,47 +666,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // This method will get call when user click on create folder button
-    public void createFolder(View view) {
-        if (mDriveServiceHelper != null) {
-
-            // check folder present or not
-            mDriveServiceHelper.isFolderPresent()
-                    .addOnSuccessListener(new OnSuccessListener<String>() {
-                        @Override
-                        public void onSuccess(String id) {
-                            if (id.isEmpty()){
-                                mDriveServiceHelper.createFolder()
-                                        .addOnSuccessListener(new OnSuccessListener<String>() {
-                                            @Override
-                                            public void onSuccess(String fileId) {
-                                                Log.e(TAG, "folder id: "+fileId );
-                                                folderId=fileId;
-                                                showMessage("Folder Created with id: "+fileId);
-                                            }
-                                        })
-                                        .addOnFailureListener(new OnFailureListener() {
-                                            @Override
-                                            public void onFailure(Exception exception) {
-                                                showMessage("Couldn't create file.");
-                                                Log.e(TAG, "Couldn't create file.", exception);
-                                            }
-                                        });
-                            }else {
-                                folderId=id;
-                                showMessage("Folder already present");
-                            }
-
-                        }
-                    })
-                    .addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(Exception exception) {
-                            showMessage("Couldn't create file..");
-                            Log.e(TAG, "Couldn't create file..", exception);
-                        }
-                    });
-        }
-    }
 
     public void createFolder() {
         if (mDriveServiceHelper != null) {
@@ -404,61 +709,70 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    // This method will get call when user click on folder data button
-    public void getFolderData(View view) {
-        if (mDriveServiceHelper != null) {
-            Intent intent = new Intent(this, ListActivity.class);
+    private void viewGoogleDriveFolder() {
+        if (folderId != null && mDriveServiceHelper != null) {
+            String folderUrl = "https://drive.google.com/drive/folders/" + folderId;
+            Uri uri = Uri.parse(folderUrl);
 
-            mDriveServiceHelper.getFolderFileList()
-                    .addOnSuccessListener(new OnSuccessListener<ArrayList<GoogleDriveFileHolder>>() {
-                        @Override
-                        public void onSuccess(ArrayList<GoogleDriveFileHolder> result) {
-                            Log.e(TAG, "onSuccess: result: "+result.size() );
-                            intent.putParcelableArrayListExtra("fileList", result);
-                            startActivity(intent);
-                        }
-                    })
-                    .addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(Exception e) {
-                            showMessage("Not able to access Folder data.");
-                            Log.e(TAG, "Not able to access Folder data.", e);
-                        }
-                    });
+            Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+            intent.setPackage("com.google.android.apps.docs"); // Open in Google Drive app if available
+            intent.setDataAndType(uri, "text/html");
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+            try {
+                startActivity(intent);
+            } catch (ActivityNotFoundException e) {
+                // If Google Drive app is not installed, open in a web browser
+                intent.setPackage(null);
+                startActivity(intent);
+            }
+        } else {
+            showMessage("Folder ID is not available or not signed in.");
         }
     }
 
-    // This method will get call when user click on upload file button
-    public void uploadFile(View view) {
 
-        Intent intent;
-        if (android.os.Build.MANUFACTURER.equalsIgnoreCase("samsung")) {
-            intent = new Intent("com.sec.android.app.myfiles.PICK_DATA");
-            intent.putExtra("CONTENT_TYPE", "*/*");
-            intent.addCategory(Intent.CATEGORY_DEFAULT);
-            Log.e(TAG, "uploadFile: if" );
-        } else {
 
-//            String[] mimeTypes =
-//                    {"application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", // .doc & .docx
-//                            "application/vnd.ms-powerpoint", "application/vnd.openxmlformats-officedocument.presentationml.presentation", // .ppt & .pptx
-//                            "application/vnd.ms-excel", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", // .xls & .xlsx
-//                            "text/plain",
-//                            "application/pdf",
-//                            "application/zip", "application/vnd.android.package-archive"};
+    // This method will get call when user click on folder data button
+    public void getFolderData(View view) {
+        viewGoogleDriveFolder();
+    }
 
-            String[] mimeTypes = {
-                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-            };
-            intent = new Intent(Intent.ACTION_GET_CONTENT); // or ACTION_OPEN_DOCUMENT
-            intent.setType("*/*");
-            intent.putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes);
-            intent.addCategory(Intent.CATEGORY_OPENABLE);
-            intent.putExtra(Intent.EXTRA_LOCAL_ONLY, true);
-            Log.e(TAG, "uploadFile: else" );
-        }
-        startActivityForResult(Intent.createChooser(intent,"Choose File to Upload.."),PICK_FILE_REQUEST);
+    
+//    public void getFolderData(View view) {
+//        if (mDriveServiceHelper != null) {
+//            Intent intent = new Intent(this, ListActivity.class);
+//
+//            mDriveServiceHelper.getFolderFileList()
+//                    .addOnSuccessListener(new OnSuccessListener<ArrayList<GoogleDriveFileHolder>>() {
+//                        @Override
+//                        public void onSuccess(ArrayList<GoogleDriveFileHolder> result) {
+//                            Log.e(TAG, "onSuccess: result: "+result.size() );
+//                            intent.putParcelableArrayListExtra("fileList", result);
+//                            startActivity(intent);
+//                        }
+//                    })
+//                    .addOnFailureListener(new OnFailureListener() {
+//                        @Override
+//                        public void onFailure(Exception e) {
+//                            showMessage("Not able to access Folder data.");
+//                            Log.e(TAG, "Not able to access Folder data.", e);
+//                        }
+//                    });
+//        }
+//    }
 
+
+    private void selectImageFromGallery() {
+//        createFolder();
+        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        startActivityForResult(intent, REQUEST_IMAGE_GALLERY);
+    }
+
+    private void selectVideoFromGallery() {
+//        createFolder();
+        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Video.Media.EXTERNAL_CONTENT_URI);
+        startActivityForResult(intent, REQUEST_VIDEO_GALLERY);
     }
 
     // This method will get call when user click on sign-out button
@@ -471,7 +785,7 @@ public class MainActivity extends AppCompatActivity {
                             signInButton.setEnabled(true);
                             createFolderButton.setEnabled(false);
                             folderFilesButton.setEnabled(false);
-                            uploadFileButton.setEnabled(false);
+
                             signOutButton.setEnabled(false);
                             showMessage("Sign-Out is done...!!");
                         }

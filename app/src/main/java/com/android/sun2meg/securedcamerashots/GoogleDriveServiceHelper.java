@@ -6,13 +6,25 @@ import android.content.ContentResolver;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Handler;
+import android.os.Looper;
 import android.provider.OpenableColumns;
 import android.util.Log;
 import android.util.Pair;
+import android.widget.ProgressBar;
+import android.widget.TextView;
+import android.widget.Toast;
+
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
+import com.google.api.client.googleapis.media.MediaHttpDownloader;
+import com.google.api.client.googleapis.media.MediaHttpDownloaderProgressListener;
+import com.google.api.client.googleapis.media.MediaHttpUploader;
+import com.google.api.client.googleapis.media.MediaHttpUploaderProgressListener;
 import com.google.api.client.http.ByteArrayContent;
 import com.google.api.client.http.FileContent;
+import com.google.api.client.http.HttpRequest;
+import com.google.api.client.http.HttpRequestInitializer;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.model.File;
 import com.google.api.services.drive.model.FileList;
@@ -27,6 +39,8 @@ import java.util.Collections;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
+import com.google.api.client.http.HttpTransport;
 
 //import static com.dreamappsstore.googledrive_demo.MainActivity.folderId;
 
@@ -41,9 +55,9 @@ public class GoogleDriveServiceHelper {
     private final Drive mDriveService;
 
     private final String FOLDER_MIME_TYPE = "application/vnd.google-apps.folder";
-    private final String SHEET_MIME_TYPE = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+    private final String SHEET_MIME_TYPE = "video/mp4";
     private final String FOLDER_NAME = "Example_Folder";
-
+    private final Handler mHandler = new Handler(Looper.getMainLooper());
     public GoogleDriveServiceHelper(Drive driveService) {
         mDriveService = driveService;
     }
@@ -117,39 +131,164 @@ public class GoogleDriveServiceHelper {
     /**
      * Upload the file to the user's My Drive Folder.
      */
-    public Task<Boolean> uploadFileToGoogleDrive(String path) {
 
-        if (folderId.isEmpty()){
-            Log.e(TAG, "uploadFileToGoogleDrive: folder id not present" );
-            isFolderPresent().addOnSuccessListener(id -> folderId=id)
-                    .addOnFailureListener(exception -> Log.e(TAG, "Couldn't create file.", exception));
-        }
-
+    public Task<Boolean> uploadFileToGoogleDrive(String path, ProgressBar progressBar,TextView tv) {
         return Tasks.call(mExecutor, () -> {
-
-            Log.e(TAG, "uploadFileToGoogleDrive: path: "+path );
             java.io.File filePath = new java.io.File(path);
 
-            File fileMetadata = new File();
-            fileMetadata.setName(filePath.getName());
-            fileMetadata.setParents(Collections.singletonList(folderId));
-            fileMetadata.setMimeType("video/mp4");
-//            fileMetadata.setMimeType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+//            fileMetadata.setName(filePath.getName());
+            File fileMetadata = new File()
+                    .setParents(Collections.singletonList(folderId))
+                    .setMimeType("video/mp4")
+                             .setName(filePath.getName());
+//                    .setName(new File(path).getName());
 
+//            java.io.File filePath = new java.io.File(path);
             FileContent mediaContent = new FileContent("video/mp4", filePath);
-//            FileContent mediaContent = new FileContent("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", filePath);
-            File file = mDriveService.files().create(fileMetadata, mediaContent)
-                    .setFields("id")
-                    .execute();
-            System.out.println("File ID: " + file.getId());
 
-            return false;
+            Drive.Files.Create createRequest = mDriveService.files().create(fileMetadata, mediaContent);
+            MediaHttpUploader uploader = createRequest.getMediaHttpUploader();
+            uploader.setDirectUploadEnabled(false); // Enable resumable uploads
+
+            MediaHttpUploaderProgressListener progressListener = new MediaHttpUploaderProgressListener() {
+                @Override
+                public void progressChanged(MediaHttpUploader uploader) throws IOException {
+                    switch (uploader.getUploadState()) {
+                        case INITIATION_STARTED:
+                            // Handle initiation started
+                            break;
+                        case INITIATION_COMPLETE:
+                            // Handle initiation complete
+                            break;
+                        case MEDIA_IN_PROGRESS:
+                            int percentage = (int) (uploader.getProgress() * 100);
+                            // Update the progress bar or send the percentage to the UI
+                            mHandler.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    progressBar.setProgress(percentage);
+                                    tv.setText(percentage);
+                                }
+                            });
+
+                            break;
+                        case MEDIA_COMPLETE:
+                            // Upload complete, file has been successfully uploaded
+                            mHandler.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    progressBar.setProgress(0);
+                                    tv.setText("Uploaded");
+                                }
+                            });
+
+                            break;
+                        case NOT_STARTED:
+                            // Handle not started
+                            break;
+                    }
+                }
+            };
+            uploader.setProgressListener(progressListener);
+
+            File uploadedFile = createRequest.execute();
+            return uploadedFile != null;
         });
     }
+
+    public Task<Boolean> uploadFileToGoogleDriveImg(String path, ProgressBar progressBar, TextView tv) {
+        return Tasks.call(mExecutor, () -> {
+            java.io.File filePath = new java.io.File(path);
+
+//            fileMetadata.setName(filePath.getName());
+            File fileMetadata = new File()
+                    .setParents(Collections.singletonList(folderId))
+                    .setMimeType("image/jpeg")
+                    .setName(filePath.getName());
+//                    .setName(new File(path).getName());
+
+//            java.io.File filePath = new java.io.File(path);
+            FileContent mediaContent = new FileContent("image/jpeg", filePath);
+
+            Drive.Files.Create createRequest = mDriveService.files().create(fileMetadata, mediaContent);
+            MediaHttpUploader uploader = createRequest.getMediaHttpUploader();
+            uploader.setDirectUploadEnabled(false); // Enable resumable uploads
+
+            MediaHttpUploaderProgressListener progressListener = new MediaHttpUploaderProgressListener() {
+                @Override
+                public void progressChanged(MediaHttpUploader uploader) throws IOException {
+                    switch (uploader.getUploadState()) {
+                        case INITIATION_STARTED:
+                            // Handle initiation started
+                            break;
+                        case INITIATION_COMPLETE:
+                            // Handle initiation complete
+                            break;
+                        case MEDIA_IN_PROGRESS:
+                            int percentage = (int) (uploader.getProgress() * 100);
+                            // Update the progress bar or send the percentage to the UI
+                            mHandler.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    progressBar.setProgress(percentage);
+                                    tv.setText(percentage);
+                                }
+                            });
+                            progressBar.setProgress(percentage);
+                            break;
+                        case MEDIA_COMPLETE:
+                            tv.setText("Uploaded");
+                            // Upload complete, file has been successfully uploaded
+                            break;
+                        case NOT_STARTED:
+                            // Handle not started
+                            break;
+                    }
+                }
+            };
+            uploader.setProgressListener(progressListener);
+
+            File uploadedFile = createRequest.execute();
+            return uploadedFile != null;
+        });
+    }
+
+
+//    public Task<Boolean> uploadFileToGoogleDrive(String path) {
+//
+//        if (folderId.isEmpty()){
+//            Log.e(TAG, "uploadFileToGoogleDrive: folder id not present" );
+//            isFolderPresent().addOnSuccessListener(id -> folderId=id)
+//                    .addOnFailureListener(exception -> Log.e(TAG, "Couldn't create file.", exception));
+//        }
+//
+//        return Tasks.call(mExecutor, () -> {
+//
+//            Log.e(TAG, "uploadFileToGoogleDrive: path: "+path );
+//            java.io.File filePath = new java.io.File(path);
+//
+//            File fileMetadata = new File();
+//            fileMetadata.setName(filePath.getName());
+//            fileMetadata.setParents(Collections.singletonList(folderId));
+//            fileMetadata.setMimeType("video/mp4");
+////            fileMetadata.setMimeType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+//
+//            FileContent mediaContent = new FileContent("video/mp4", filePath);
+////            FileContent mediaContent = new FileContent("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", filePath);
+//            File file = mDriveService.files().create(fileMetadata, mediaContent)
+//                    .setFields("id")
+//                    .execute();
+//            System.out.println("File ID: " + file.getId());
+//
+//            return false;
+//        });
+//    }
 
     /**
      * Download file from the user's My Drive Folder.
      */
+
+
     public Task<Boolean> downloadFile(final java.io.File fileSaveLocation, final String fileId) {
         return Tasks.call(mExecutor, new Callable<Boolean>() {
             @Override
