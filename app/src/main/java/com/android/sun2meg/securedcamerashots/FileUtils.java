@@ -8,6 +8,7 @@ import android.os.Build;
 import android.os.Environment;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
+import android.util.Log;
 //import androidx.annotation.RequiresApi;
 
 
@@ -82,6 +83,53 @@ class FileUtils {
 
         return null;
     }
+
+
+    public static String getPath1(Context context, Uri uri) {
+        // Check if the URI scheme is 'file'
+        if ("file".equalsIgnoreCase(uri.getScheme())) {
+            return uri.getPath();
+        }
+
+        // For other URIs, try to query the media store
+        if ("content".equalsIgnoreCase(uri.getScheme())) {
+            return getDataColumn(context, uri, null, null);
+        }
+
+        return null;
+    }
+    public static String getDataColumn1(Context context, Uri uri, String selection, String[] selectionArgs) {
+        Cursor cursor = null;
+        final String[] projection = {MediaStore.MediaColumns.DATA, MediaStore.MediaColumns.DISPLAY_NAME};
+
+        try {
+            cursor = context.getContentResolver().query(uri, projection, selection, selectionArgs, null);
+            if (cursor != null && cursor.moveToFirst()) {
+                int column_index = cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA);
+                return cursor.getString(column_index);
+            } else {
+                // Handle the case where the _data column is not available
+                return handleNoDataColumn(context, uri, selection, selectionArgs);
+            }
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
+    }
+
+    private static String handleNoDataColumn(Context context, Uri uri, String selection, String[] selectionArgs) {
+        // Add your logic here to handle the case where the _data column is not available
+        // You might want to handle different schemes or authorities here
+        // For example, return null or log a message
+
+        // Log a message (you can remove or customize this)
+        Log.e("FileUtils", "Column '_data' does not exist. Uri: " + uri.toString());
+
+        // Return null or handle it based on your requirements
+        return null;
+    }
+
 
     public static String getDataColumn(Context context, Uri uri, String selection, String[] selectionArgs) {
 

@@ -5,17 +5,55 @@
       <map>
         <entry key="..\:/Users/Mega/AndroidStudioProjects/SecuredCameraShots/app/src/main/res/drawable-v24/ic_delete.xml" value="0.1171875" />
         <entry key="..\:/Users/Mega/AndroidStudioProjects/SecuredCameraShots/app/src/main/res/drawable-v24/ic_launcher_background.xml" value="0.1171875" />
+        <entry key="..\:/Users/Mega/AndroidStudioProjects/SecuredCameraShots/app/src/main/res/drawable/arrowback.xml" value="0.16944444444444445" />
+        <entry key="..\:/Users/Mega/AndroidStudioProjects/SecuredCameraShots/app/src/main/res/drawable/backbutton.xml" value="0.1675925925925926" />
+        <entry key="..\:/Users/Mega/AndroidStudioProjects/SecuredCameraShots/app/src/main/res/drawable/backbutton2.xml" value="0.1675925925925926" />
+        <entry key="..\:/Users/Mega/AndroidStudioProjects/SecuredCameraShots/app/src/main/res/drawable/background.xml" value="0.17" />
+        <entry key="..\:/Users/Mega/AndroidStudioProjects/SecuredCameraShots/app/src/main/res/drawable/background2.xml" value="0.22" />
+        <entry key="..\:/Users/Mega/AndroidStudioProjects/SecuredCameraShots/app/src/main/res/drawable/backnet.xml" value="0.16944444444444445" />
+        <entry key="..\:/Users/Mega/AndroidStudioProjects/SecuredCameraShots/app/src/main/res/drawable/cir_phote_lib.xml" value="0.1675925925925926" />
+        <entry key="..\:/Users/Mega/AndroidStudioProjects/SecuredCameraShots/app/src/main/res/drawable/cir_photo.xml" value="0.11354166666666667" />
+        <entry key="..\:/Users/Mega/AndroidStudioProjects/SecuredCameraShots/app/src/main/res/drawable/cir_resend_pht.xml" value="0.11354166666666667" />
+        <entry key="..\:/Users/Mega/AndroidStudioProjects/SecuredCameraShots/app/src/main/res/drawable/cir_resend_vid.xml" value="0.11354166666666667" />
+        <entry key="..\:/Users/Mega/AndroidStudioProjects/SecuredCameraShots/app/src/main/res/drawable/cir_vid.xml" value="0.11354166666666667" />
+        <entry key="..\:/Users/Mega/AndroidStudioProjects/SecuredCameraShots/app/src/main/res/drawable/cir_vid_lib.xml" value="0.11354166666666667" />
+        <entry key="..\:/Users/Mega/AndroidStudioProjects/SecuredCameraShots/app/src/main/res/drawable/coinbakground.xml" value="0.1675925925925926" />
+        <entry key="..\:/Users/Mega/AndroidStudioProjects/SecuredCameraShots/app/src/main/res/drawable/dot.xml" value="0.1675925925925926" />
+        <entry key="..\:/Users/Mega/AndroidStudioProjects/SecuredCameraShots/app/src/main/res/drawable/dotgray.xml" value="0.1675925925925926" />
         <entry key="..\:/Users/Mega/AndroidStudioProjects/SecuredCameraShots/app/src/main/res/drawable/ic_background_button.xml" value="0.1171875" />
         <entry key="..\:/Users/Mega/AndroidStudioProjects/SecuredCameraShots/app/src/main/res/drawable/ic_launcher_background.xml" value="0.1171875" />
         <entry key="..\:/Users/Mega/AndroidStudioProjects/SecuredCameraShots/app/src/main/res/drawable/ic_launcher_foreground.xml" value="0.12083333333333333" />
+        <entry key="..\:/Users/Mega/AndroidStudioProjects/SecuredCameraShots/app/src/main/res/drawable/ic_photo.xml" value="0.1675925925925926" />
+        <entry key="..\:/Users/Mega/AndroidStudioProjects/SecuredCameraShots/app/src/main/res/drawable/ic_photo_lib.xml" value="0.1675925925925926" />
+        <entry key="..\:/Users/Mega/AndroidStudioProjects/SecuredCameraShots/app/src/main/res/drawable/ic_resend_pht.xml" value="0.1675925925925926" />
+        <entry key="..\:/Users/Mega/AndroidStudioProjects/SecuredCameraShots/app/src/main/res/drawable/ic_resend_vid.xml" value="0.1675925925925926" />
+        <entry key="..\:/Users/Mega/AndroidStudioProjects/SecuredCameraShots/app/src/main/res/drawable/ic_video.xml" value="0.1675925925925926" />
+        <entry key="..\:/Users/Mega/AndroidStudioProjects/SecuredCameraShots/app/src/main/res/drawable/ic_video_lib.xml" value="0.1675925925925926" />
+        <entry key="..\:/Users/Mega/AndroidStudioProjects/SecuredCameraShots/app/src/main/res/drawable/nointernet.xml" value="0.1078125" />
+        <entry key="..\:/Users/Mega/AndroidStudioProjects/SecuredCameraShots/app/src/main/res/drawable/red_progress.xml" value="0.11354166666666667" />
+        <entry key="..\:/Users/Mega/AndroidStudioProjects/SecuredCameraShots/app/src/main/res/font/aldrich.xml" value="0.12760416666666666" />
+        <entry key="..\:/Users/Mega/AndroidStudioProjects/SecuredCameraShots/app/src/main/res/layout-large/activity_main.xml" value="0.15" />
+        <entry key="..\:/Users/Mega/AndroidStudioProjects/SecuredCameraShots/app/src/main/res/layout-normal/activity_main.xml" value="0.16" />
+        <entry key="..\:/Users/Mega/AndroidStudioProjects/SecuredCameraShots/app/src/main/res/layout-small/activity_main.xml" value="0.6223404255319149" />
+        <entry key="..\:/Users/Mega/AndroidStudioProjects/SecuredCameraShots/app/src/main/res/layout-sw600dp/activity_main.xml" value="0.1" />
+        <entry key="..\:/Users/Mega/AndroidStudioProjects/SecuredCameraShots/app/src/main/res/layout-xlarge/activity_main.xml" value="0.18" />
         <entry key="..\:/Users/Mega/AndroidStudioProjects/SecuredCameraShots/app/src/main/res/layout/activity_google_drive.xml" value="0.1933876811594203" />
+        <entry key="..\:/Users/Mega/AndroidStudioProjects/SecuredCameraShots/app/src/main/res/layout/activity_instructions.xml" value="0.18" />
         <entry key="..\:/Users/Mega/AndroidStudioProjects/SecuredCameraShots/app/src/main/res/layout/activity_list.xml" value="0.20416666666666666" />
-        <entry key="..\:/Users/Mega/AndroidStudioProjects/SecuredCameraShots/app/src/main/res/layout/activity_main.xml" value="0.203913491246138" />
+        <entry key="..\:/Users/Mega/AndroidStudioProjects/SecuredCameraShots/app/src/main/res/layout/activity_main.xml" value="0.18" />
+        <entry key="..\:/Users/Mega/AndroidStudioProjects/SecuredCameraShots/app/src/main/res/layout/activity_no_internet.xml" value="0.25" />
+        <entry key="..\:/Users/Mega/AndroidStudioProjects/SecuredCameraShots/app/src/main/res/layout/activity_slider2.xml" value="0.25" />
+        <entry key="..\:/Users/Mega/AndroidStudioProjects/SecuredCameraShots/app/src/main/res/layout/activity_splash.xml" value="0.2" />
         <entry key="..\:/Users/Mega/AndroidStudioProjects/SecuredCameraShots/app/src/main/res/layout/activity_upload.xml" value="0.14719202898550723" />
         <entry key="..\:/Users/Mega/AndroidStudioProjects/SecuredCameraShots/app/src/main/res/layout/activity_upload_to_drive.xml" value="0.25" />
         <entry key="..\:/Users/Mega/AndroidStudioProjects/SecuredCameraShots/app/src/main/res/layout/file_list_layout.xml" value="0.1" />
+        <entry key="..\:/Users/Mega/AndroidStudioProjects/SecuredCameraShots/app/src/main/res/layout/main.xml" value="0.25" />
+        <entry key="..\:/Users/Mega/AndroidStudioProjects/SecuredCameraShots/app/src/main/res/layout/slider.xml" value="0.15" />
+        <entry key="..\:/Users/Mega/AndroidStudioProjects/SecuredCameraShots/app/src/main/res/layout/test.xml" value="0.18" />
+        <entry key="..\:/Users/Mega/AndroidStudioProjects/SecuredCameraShots/app/src/main/res/menu/menu_main.xml" value="0.25" />
         <entry key="..\:/Users/Mega/AndroidStudioProjects/SecuredCameraShots/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml" value="0.12083333333333333" />
         <entry key="..\:/Users/Mega/AndroidStudioProjects/SecuredCameraShots/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml" value="0.12083333333333333" />
+        <entry key="..\:/Users/Mega/AndroidStudioProjects/SecuredCameraShots/app/src/main/res/xml/file_paths.xml" value="0.20416666666666666" />
       </map>
     </option>
   </component>

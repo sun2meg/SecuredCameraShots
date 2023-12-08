@@ -42,6 +42,7 @@ import java.util.concurrent.Executors;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.HttpTransport;
 
+
 //import static com.dreamappsstore.googledrive_demo.MainActivity.folderId;
 
 /**
@@ -56,7 +57,7 @@ public class GoogleDriveServiceHelper {
 
     private final String FOLDER_MIME_TYPE = "application/vnd.google-apps.folder";
     private final String SHEET_MIME_TYPE = "video/mp4";
-    private final String FOLDER_NAME = "Example_Folder";
+    private final String FOLDER_NAME = "Secured_Cam_Shots";
     private final Handler mHandler = new Handler(Looper.getMainLooper());
     public GoogleDriveServiceHelper(Drive driveService) {
         mDriveService = driveService;
@@ -131,24 +132,26 @@ public class GoogleDriveServiceHelper {
     /**
      * Upload the file to the user's My Drive Folder.
      */
-
-    public Task<Boolean> uploadFileToGoogleDrive(String path, ProgressBar progressBar,TextView tv) {
+    public Task<Boolean> uploadFileToGoogleDrive(String path, ProgressBar progressBar, TextView tv) {
         return Tasks.call(mExecutor, () -> {
             java.io.File filePath = new java.io.File(path);
-
-//            fileMetadata.setName(filePath.getName());
             File fileMetadata = new File()
                     .setParents(Collections.singletonList(folderId))
                     .setMimeType("video/mp4")
-                             .setName(filePath.getName());
-//                    .setName(new File(path).getName());
+                    .setName(filePath.getName());
 
-//            java.io.File filePath = new java.io.File(path);
             FileContent mediaContent = new FileContent("video/mp4", filePath);
 
+            // Use a chunk size that works well for your use case
+            int chunkSize = 10 * 1024 * 1024; // 10MB chunk size
+
             Drive.Files.Create createRequest = mDriveService.files().create(fileMetadata, mediaContent);
+
+            // Enable chunked resumable upload with the specified chunk size
+            createRequest.getMediaHttpUploader().setDirectUploadEnabled(false);
+            createRequest.getMediaHttpUploader().setChunkSize(chunkSize);
+
             MediaHttpUploader uploader = createRequest.getMediaHttpUploader();
-            uploader.setDirectUploadEnabled(false); // Enable resumable uploads
 
             MediaHttpUploaderProgressListener progressListener = new MediaHttpUploaderProgressListener() {
                 @Override
@@ -162,27 +165,38 @@ public class GoogleDriveServiceHelper {
                             break;
                         case MEDIA_IN_PROGRESS:
                             int percentage = (int) (uploader.getProgress() * 100);
-                            // Update the progress bar or send the percentage to the UI
+                            // Update the progress bar
+                            progressBar.setProgress(percentage);
+                            // Set the percentage as a String in the TextView
                             mHandler.post(new Runnable() {
                                 @Override
                                 public void run() {
-                                    progressBar.setProgress(percentage);
-                                    tv.setText(percentage);
+                                    tv.setText(String.valueOf(percentage));
                                 }
                             });
-
                             break;
                         case MEDIA_COMPLETE:
                             // Upload complete, file has been successfully uploaded
                             mHandler.post(new Runnable() {
                                 @Override
                                 public void run() {
-                                    progressBar.setProgress(0);
+                                    progressBar.setProgress(100);
                                     tv.setText("Uploaded");
+                                    progressBar.setProgress(0);
                                 }
                             });
-
                             break;
+////
+//                        case MEDIA_IN_PROGRESS:
+//                            int percentage = (int) (uploader.getProgress() * 100);
+//                            progressBar.setProgress(percentage);
+//                            tv.setText(String.valueOf(percentage));
+//                            break;
+//                        case MEDIA_COMPLETE:
+//                            // Upload complete, file has been successfully uploaded
+//                            progressBar.setProgress(0);
+//                            tv.setText("Uploaded");
+//                            break;
                         case NOT_STARTED:
                             // Handle not started
                             break;
@@ -191,10 +205,105 @@ public class GoogleDriveServiceHelper {
             };
             uploader.setProgressListener(progressListener);
 
-            File uploadedFile = createRequest.execute();
+            File uploadedFile = null;
+            try {
+                // Execute the upload request and get the uploaded file information
+                uploadedFile = createRequest.execute();
+            } catch (IOException e) {
+                // Handle the upload error and implement resuming logic here
+                e.printStackTrace();
+                // Resume the upload from where it left off
+            }
+
             return uploadedFile != null;
         });
     }
+
+//    public Task<Boolean> uploadFileToGoogleDrive(String path, ProgressBar progressBar,TextView tv) {
+//        return Tasks.call(mExecutor, () -> {
+//            java.io.File filePath = new java.io.File(path);
+//
+////            fileMetadata.setName(filePath.getName());
+//            File fileMetadata = new File()
+//                    .setParents(Collections.singletonList(folderId))
+//                    .setMimeType("video/mp4")
+//                             .setName(filePath.getName());
+////                    .setName(new File(path).getName());
+//
+////            java.io.File filePath = new java.io.File(path);
+//            FileContent mediaContent = new FileContent("video/mp4", filePath);
+//
+//            Drive.Files.Create createRequest = mDriveService.files().create(fileMetadata, mediaContent);
+//            MediaHttpUploader uploader = createRequest.getMediaHttpUploader();
+//            uploader.setDirectUploadEnabled(false); // Enable resumable uploads
+//
+//            MediaHttpUploaderProgressListener progressListener = new MediaHttpUploaderProgressListener() {
+//                @Override
+//                public void progressChanged(MediaHttpUploader uploader) throws IOException {
+//                    switch (uploader.getUploadState()) {
+//                        case INITIATION_STARTED:
+//                            // Handle initiation started
+//                            break;
+//                        case INITIATION_COMPLETE:
+//                            // Handle initiation complete
+//                            break;
+//                        case MEDIA_IN_PROGRESS:
+//                            int percentage = (int) (uploader.getProgress() * 100);
+//                            // Update the progress bar
+//                            progressBar.setProgress(percentage);
+//                            // Set the percentage as a String in the TextView
+//                            mHandler.post(new Runnable() {
+//                                @Override
+//                                public void run() {
+//                                    tv.setText(String.valueOf(percentage));
+//                                }
+//                            });
+//                            break;
+//                        case MEDIA_COMPLETE:
+//                            // Upload complete, file has been successfully uploaded
+//                            mHandler.post(new Runnable() {
+//                                @Override
+//                                public void run() {
+//                                    progressBar.setProgress(0);
+//                                    tv.setText("Uploaded");
+//                                }
+//                            });
+//                            break;
+////                        case MEDIA_IN_PROGRESS:
+////                            int percentage = (int) (uploader.getProgress() * 100);
+////                            // Update the progress bar or send the percentage to the UI
+////                            mHandler.post(new Runnable() {
+////                                @Override
+////                                public void run() {
+////                                    progressBar.setProgress(percentage);
+////                                    tv.setText(percentage);
+////                                }
+////                            });
+////
+////                            break;
+////                        case MEDIA_COMPLETE:
+////                            // Upload complete, file has been successfully uploaded
+////                            mHandler.post(new Runnable() {
+////                                @Override
+////                                public void run() {
+////                                    progressBar.setProgress(0);
+////                                    tv.setText("Uploaded");
+////                                }
+////                            });
+////
+////                            break;
+//                        case NOT_STARTED:
+//                            // Handle not started
+//                            break;
+//                    }
+//                }
+//            };
+//            uploader.setProgressListener(progressListener);
+//
+//            File uploadedFile = createRequest.execute();
+//            return uploadedFile != null;
+//        });
+//    }
 
     public Task<Boolean> uploadFileToGoogleDriveImg(String path, ProgressBar progressBar, TextView tv) {
         return Tasks.call(mExecutor, () -> {
@@ -224,22 +333,45 @@ public class GoogleDriveServiceHelper {
                         case INITIATION_COMPLETE:
                             // Handle initiation complete
                             break;
+
                         case MEDIA_IN_PROGRESS:
                             int percentage = (int) (uploader.getProgress() * 100);
-                            // Update the progress bar or send the percentage to the UI
+                            // Update the progress bar
+                            progressBar.setProgress(percentage);
+                            // Set the percentage as a String in the TextView
                             mHandler.post(new Runnable() {
                                 @Override
                                 public void run() {
-                                    progressBar.setProgress(percentage);
-                                    tv.setText(percentage);
+                                    tv.setText(String.valueOf(percentage));
                                 }
                             });
-                            progressBar.setProgress(percentage);
                             break;
                         case MEDIA_COMPLETE:
-                            tv.setText("Uploaded");
                             // Upload complete, file has been successfully uploaded
+                            mHandler.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    progressBar.setProgress(0);
+                                    tv.setText("Uploaded");
+                                }
+                            });
                             break;
+//                        case MEDIA_IN_PROGRESS:
+//                            int percentage = (int) (uploader.getProgress() * 100);
+//                            // Update the progress bar or send the percentage to the UI
+//                            mHandler.post(new Runnable() {
+//                                @Override
+//                                public void run() {
+//                                    progressBar.setProgress(percentage);
+//                                    tv.setText(percentage);
+//                                }
+//                            });
+//                            progressBar.setProgress(percentage);
+//                            break;
+//                        case MEDIA_COMPLETE:
+//                            tv.setText("Uploaded");
+//                            // Upload complete, file has been successfully uploaded
+//                            break;
                         case NOT_STARTED:
                             // Handle not started
                             break;

@@ -31,11 +31,22 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.SecuredCameraShots">
         <activity
+            android:name=".Slider2"
+            android:exported="true" />
+
+        <meta-data
+            android:name="preloaded_fonts"
+            android:resource="@array/preloaded_fonts" />
+
+        <activity
             android:name=".UploadToDriveActivity"
             android:exported="true" />
         <activity
             android:name=".GoogleDriveActivity"
             android:exported="true" />
+        <activity
+            android:name=".NoInternetActivity"
+            android:screenOrientation="portrait" />
         <activity
             android:name=".ListActivity"
             android:exported="true" />
@@ -43,7 +54,13 @@
             android:name=".UploadActivity"
             android:exported="true" />
         <activity
+            android:name=".Slider"
+            android:exported="true" />
+        <activity
             android:name=".MainActivity"
+            android:exported="true"></activity>
+        <activity
+            android:name=".SplashActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -51,6 +68,18 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="com.android.sun2meg.securedcamerashots.fileprovider"
+
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+
+
     </application>
 
 </manifest>
